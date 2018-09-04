@@ -10,6 +10,34 @@ Created on Mon Aug 13 11:24:34 2018
 
 """
 
+
+name_path = 'gris'
+import numpy as np
+
+##%% Give the parameter of forward operator
+num_angles = 10
+miniangle = '0_3pi'
+min_angle = 0.3 * np.pi
+maxiangle = '0_7pi'
+max_angle = 0.7 * np.pi
+
+
+
+
+
+
+name_init = '/home/' + name_path
+path_results = name_init + '/Results/DeformationModule/RayTransfo/'
+name_exp =  '__minanglangle_' + miniangle+ '__maxangle_' + maxiangle + '__angles_' + str(num_angles) 
+
+name_file_output = path_results + 'output' + name_exp
+
+import sys
+sys.path.insert(0, "/home/" + name_path + "/miniconda3/envs/odl/lib/python3.5/site-packages/")
+sys.path.insert(0,"/home/" + name_path + "/git_repo/odl")
+sys.path.insert(0, "/home/" + name_path + "/git_repo/ConstrainedIndirectRegistration")
+
+
 import odl
 import numpy as np
 from matplotlib import pylab as plt
@@ -26,36 +54,25 @@ import scipy
 
 ##%%
 
-##%% Give the parameter of forward operator
-num_angles = 10
-miniangle = '0_3pi'
-min_angle = 0.3 * np.pi
-maxiangle = '0_7pi'
-max_angle = 0.7 * np.pi
-
-path_init = '/Network/Servers/ldap.ann.jussieu.fr/Volumes/DATA/users/thesards/gris/'
-path_init += 'Results/DeformationModule/RayTransfo/'
-
-
-
-name_exp =  '__minanglangle_' + miniangle+ '__maxangle_' + maxiangle + '__angles_' + str(num_angles) 
-sigmaRot = 0.5
-nb_dir = 10
-nb_orth = 4
-noise_level_str = '0'
-name_exp += 'sigmaRot_' + str(sigmaRot) + '__nb_dir_' + str(nb_dir) + '__nb_orth_' + str(nb_orth) + '__noise_level_' + noise_level_str 
-
-path_load_result = path_init + name_exp + '/'
-
-
-## Template  
+## Load data
+  
 space_init = odl.uniform_discr(
     min_pt=[-16, -16], max_pt=[16, 16], shape=[256, 256],
     dtype='float32', interp='linear')
 fac_smooth = 0.8
 template_init = odl.phantom.shepp_logan(space_init, modified=True)
 
+padded_op = ResizingOperator(
+        space_init, ran_shp=[int(2* template_init.shape[0]) for _ in range(space_init.ndim)])
+template = padded_op(template_init)
+space = template.space
 
+
+path_data = 'data/'
+name_target = 'Trans2Rot'
+target = np.loadtxt(path_data + name_target)
+
+ground_truth = space.element(target).copy()
 
 padded_op = ResizingOperator(
         space_init, ran_shp=[int(1.2* template_init.shape[0]) for _ in range(space_init.ndim)])
@@ -63,8 +80,8 @@ padded_op = ResizingOperator(
 template = padded_op(template_init)
 space = template.space
 
-template = space.element(np.loadtxt(path_load_result + 'template'))
-ground_truth = space.element(np.loadtxt(path_load_result + 'ground_truth'))
+ground_truth = space.element(ground_truth.interpolation(space.points().T).reshape(space.shape))
+template = space.element(np.loadtxt(path_data + 'Template'))
 
 angle_partition = odl.uniform_partition(min_angle, max_angle, num_angles,
                                     nodes_on_bdry=[(True, True)])
@@ -81,7 +98,7 @@ geometry = odl.tomo.Parallel2dGeometry(angle_partition, detector_partition)
 ray_trafo = odl.tomo.RayTransform(space, geometry, impl='astra_cpu')
 
 data = ray_trafo(ground_truth)
-data = ray_trafo.range.element(np.loadtxt(path_load_result + 'data'))
+#data = ray_trafo.range.element(np.loadtxt(path_load_result + 'data'))
 
 gradient = odl.Gradient(space)
 

@@ -31,9 +31,9 @@ import matplotlib.pyplot as plt
 import Modules.DeformationModuleAbstract
 from Modules.DeformationModuleAbstract import Compound
 #print(sys.path)
-import Modules.Shooting_DefModbis as shoot
+import Modules.Shooting_DefMod as shoot
 import Modules.SumTranslations as SumTranslations
-import Modules.TranslationBasedbis as TranslationBased
+import Modules.TranslationBased as TranslationBased
 import Modules.Silent as Silent
 import copy
 
@@ -284,7 +284,7 @@ snr = snr_fun(data_noisless, noise, 'dB')
 data = forward_op(ground_truth) + noise
 
 name_data = path_results + name_exp_init  + 'data' 
-np.savetxt(name_data, data)
+#np.savetxt(name_data, data)
 
 ##%% Define functional
 
@@ -345,7 +345,7 @@ print(snr)
 data = forward_op(ground_truth) + noise
 #data = forward_op.range.element(np.loadtxt(path_data + name_target + '_data'))
 name_data = path_results + name_exp_init  + 'data__fac_noise_' + fac_noise_str 
-np.savetxt(name_data, data)
+#np.savetxt(name_data, data)
 
 functional_match = shoot.MatchingModule(N, lamb, Module, data, forward_op, norm, 0.0001*space.cell_sides[0])
 
@@ -356,7 +356,7 @@ GD = copy.deepcopy(GD_init)
 X = functional.domain.element([GD, Module.GDspace.zero()])
 grad_op = functional.gradient
 energy = functional(X)
-#print(energy)
+print(energy)
 energy_tmp = energy
 
 name_exp = name_exp_init + '_fac_noise_' + fac_noise_str

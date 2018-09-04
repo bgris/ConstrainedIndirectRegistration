@@ -43,6 +43,7 @@ import Modules.DeformationModuleAbstract
 from Modules.DeformationModuleAbstract import Compound
 #print(sys.path)
 import Modules.Shooting_DefMod as shoot
+import Modules.SumTranslations as SumTranslations
 import Modules.TranslationBased as TranslationBased
 import Modules.Silent as Silent
 import copy
@@ -371,7 +372,6 @@ GD = copy.deepcopy(GD_init)
 X = functional.domain.element([GD, Module.GDspace.zero()])
 grad_op = functional.gradient
 energy = functional(X)
-
 niter = 300
 stepGD = 5e-8
 stepMom = 5e-8
